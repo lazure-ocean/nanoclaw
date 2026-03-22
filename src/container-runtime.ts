@@ -32,10 +32,13 @@ export const CONTAINER_HOST_GATEWAY =
 
 function detectHostGateway(): string {
   if (os.platform() === 'darwin') {
-    // Apple Container: host is at the bridge100 IP, not host.docker.internal
+    // Apple Container: host is at the bridge100 IP, not host.docker.internal.
+    // bridge100 may not be up yet (e.g. right after `container system start`),
+    // but Apple Container always uses 192.168.64.1 as the host gateway, so fall
+    // back to that if bridge100 isn't available. Docker Desktop uses host.docker.internal.
     const bridge = getAppleContainerBridgeIP();
     if (bridge) return bridge;
-    // Docker Desktop fallback (bridge100 not present)
+    if (isAppleContainer()) return '192.168.64.1';
     return 'host.docker.internal';
   }
   return 'host.docker.internal';
@@ -51,11 +54,24 @@ function detectHostGateway(): string {
 export const PROXY_BIND_HOST =
   process.env.CREDENTIAL_PROXY_HOST || detectProxyBindHost();
 
+
+function isAppleContainer(): boolean {
+  // Apple Container ships as /usr/local/bin/container (not Docker Desktop's docker CLI)
+  try {
+    execSync('/usr/local/bin/container --version', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function detectProxyBindHost(): string {
   if (os.platform() === 'darwin') {
-    // Apple Container: proxy must bind to bridge100 so VMs can reach it
-    const bridge = getAppleContainerBridgeIP();
-    if (bridge) return bridge;
+    // Apple Container: bind to all interfaces so VMs can reach the proxy at
+    // the bridge100 IP. Binding to bridge100 directly is fragile — the interface
+    // may not be stable at startup (e.g. right after `container system start`).
+    // Docker Desktop uses host.docker.internal → loopback, so 127.0.0.1 is correct there.
+    if (isAppleContainer()) return '0.0.0.0';
     // Docker Desktop fallback
     return '127.0.0.1';
   }
