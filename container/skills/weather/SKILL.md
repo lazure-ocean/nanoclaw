@@ -155,6 +155,7 @@ PM2.5: 4.1 · PM10: 6.2 · NO₂: 8.3 · O₃: 52.1 · CO: 180
 ```
 
 **Rules:**
+- **Language:** Reply in the same language the user used to ask about the weather. If the request is in Russian, reply in Russian (city name, advice, day names, descriptions — everything). If English, reply in English. Match any other language the same way. Only the emoji and numbers stay the same.
 - Use Telegram Markdown: `*bold*` for headers, `_italic_` for description
 - Omit snow if `snowfall_sum` is 0
 - If AQI data is missing for a forecast day, show `AQI: N/A` in that row
