@@ -10,6 +10,7 @@ import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 import { CronExpressionParser } from 'cron-parser';
+import { registerNewsTools } from './news/tools.js';
 
 const IPC_DIR = '/workspace/ipc';
 const MESSAGES_DIR = path.join(IPC_DIR, 'messages');
@@ -332,6 +333,9 @@ Use available_groups.json to find the JID for a group. The folder name must be c
     };
   },
 );
+
+// Register news RSS tools
+registerNewsTools(server);
 
 // Start the stdio transport
 const transport = new StdioServerTransport();
