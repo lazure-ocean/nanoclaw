@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS news_ingest_log (
 let db: SqlJsDatabase | null = null;
 let dbPath: string | null = null;
 
-function save(): void {
+export function save(): void {
   if (!db || !dbPath) return;
   const data = db.export();
   fs.writeFileSync(dbPath, Buffer.from(data));

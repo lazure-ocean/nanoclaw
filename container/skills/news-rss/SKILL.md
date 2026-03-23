@@ -1,31 +1,46 @@
 ---
 name: news-rss
-description: News intelligence system with RSS feed ingestion. Provides MCP tools to poll feeds, check status, browse latest items, and manage sources. Use when the user asks about news, feeds, headlines, or says "news status", "poll news", "latest news", "news sources", or "add feed".
+description: News intelligence system with RSS feed ingestion and classification. Provides MCP tools to poll feeds, classify items with AI, search by topic/region/credibility, and view story clusters. Use when the user asks about news, feeds, headlines, classification, or says "news status", "poll news", "classify news", "search news", "news clusters", or "add feed".
 ---
 
-# News RSS Intelligence
+# News Intelligence System
 
-You have access to a news RSS ingestion system via MCP tools. The system stores items in a local SQLite database at `/workspace/group/news.db`.
+You have access to a news RSS ingestion and classification system via MCP tools. The system stores items in a local SQLite database at `/workspace/group/news.db`.
 
 ## Available tools
 
+### Ingestion
 | Tool | Purpose |
 |------|---------|
 | `mcp__nanoclaw__news_status` | Ingestion stats: source count, items, last poll time |
 | `mcp__nanoclaw__news_poll_now` | Manually trigger an RSS poll of all active sources |
-| `mcp__nanoclaw__news_latest` | Get recent items (params: `count`, `source_id`) |
+| `mcp__nanoclaw__news_latest` | Get recent raw items (params: `count`, `source_id`) |
 | `mcp__nanoclaw__news_sources` | List all configured sources with active/inactive status |
-| `mcp__nanoclaw__news_add_source` | Add a new RSS source (params: `id`, `name`, `url`, `topics`, `depth`, `language`) |
-| `mcp__nanoclaw__news_toggle_source` | Activate or deactivate a source (params: `id`, `active`) |
+| `mcp__nanoclaw__news_add_source` | Add a new RSS source |
+| `mcp__nanoclaw__news_toggle_source` | Activate or deactivate a source |
+
+### Classification
+| Tool | Purpose |
+|------|---------|
+| `mcp__nanoclaw__news_classify_now` | Classify unclassified items using Claude Haiku (params: `max_items`) |
+| `mcp__nanoclaw__news_search` | Search classified items by topic, region, depth, credibility, relevance, time range |
+| `mcp__nanoclaw__news_clusters` | Show story clusters with source counts and credibility |
 
 ## When to use
 
-- "news status" / "how's the news system" → `news_status`
-- "poll news" / "fetch feeds" / "check news" → `news_poll_now`
-- "latest news" / "what's new" / "headlines" → `news_latest`
+- "news status" → `news_status`
+- "poll news" / "fetch feeds" → `news_poll_now`
+- "latest news" / "headlines" → `news_latest`
+- "classify news" / "run classifier" → `news_classify_now`
+- "search news about X" / "news on topic Y" → `news_search`
+- "story clusters" / "what stories are trending" → `news_clusters`
 - "show feeds" / "list sources" → `news_sources`
-- "add feed X" → `news_add_source`
-- "disable/enable source X" → `news_toggle_source`
+
+## Typical workflow
+
+1. `news_poll_now` — fetch latest items from RSS feeds
+2. `news_classify_now` — classify new items with AI
+3. `news_search` or `news_clusters` — query the classified data
 
 ## Formatting
 
@@ -33,20 +48,8 @@ When showing news items to the user:
 - Use the language the user asked in
 - Bold the title, include the source name and date
 - Include the URL as a link
-- For multiple items, use a numbered list
-- Keep it concise — title + source + date + link per item
-
-## Scheduled polling
-
-To set up automatic polling, use the `schedule_task` tool:
-```
-schedule_task(
-  prompt: "Poll RSS news feeds. Use the news_poll_now tool. Only send a message if there are new items — summarize the count per source.",
-  schedule_type: "cron",
-  schedule_value: "0 */2 * * *",
-  context_mode: "isolated"
-)
-```
+- For classified items, include the summary, credibility, and relevance
+- For clusters, group items by story and show source count
 
 ## Default sources
 
