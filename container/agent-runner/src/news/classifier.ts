@@ -149,7 +149,12 @@ export async function classifyBatch(maxItems = 50): Promise<ClassifyResult> {
   }
   stmt.free();
 
-  const client = new Anthropic();
+  // Support both auth modes: API key (direct) and OAuth (via credential proxy).
+  // The proxy replaces placeholder values with real credentials.
+  const client = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY || undefined,
+    authToken: process.env.CLAUDE_CODE_OAUTH_TOKEN || undefined,
+  });
 
   for (let i = 0; i < unclassified.length; i += BATCH_SIZE) {
     const batch = unclassified.slice(i, i + BATCH_SIZE);
