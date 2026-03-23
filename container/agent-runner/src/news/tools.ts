@@ -171,7 +171,7 @@ export function registerNewsTools(server: McpServer): void {
 
   server.tool(
     'news_classify_now',
-    'Manually trigger classification of unclassified news items using Claude Haiku. Processes up to 50 items in batches of 15.',
+    'Classify unclassified news items using a local Ollama LLM. Processes up to 50 items in batches of 5. Returns timing stats per batch.',
     {
       max_items: z.number().min(1).max(200).default(50).describe('Max items to classify (default 50)'),
     },
@@ -179,6 +179,18 @@ export function registerNewsTools(server: McpServer): void {
       await ensureInit();
       const result = await classifyBatch(args.max_items);
       const lines = [`Classified: ${result.classified} items in ${result.batches} batches`];
+      if (result.timing.length > 0) {
+        lines.push('');
+        lines.push('Timing:');
+        for (const t of result.timing) {
+          const secs = (t.durationMs / 1000).toFixed(1);
+          const totalTok = (t.promptTokens ?? 0) + (t.evalTokens ?? 0);
+          const perf = t.tokensPerSec ? ` · ${t.tokensPerSec} eval t/s · ${totalTok} tokens` : '';
+          lines.push(`  Batch ${t.batch}: ${t.items} items in ${secs}s${perf}`);
+        }
+        const totalMs = result.timing.reduce((sum, t) => sum + t.durationMs, 0);
+        lines.push(`  Total: ${(totalMs / 1000).toFixed(1)}s`);
+      }
       if (result.errors.length > 0) {
         lines.push('');
         lines.push('Errors:');

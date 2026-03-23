@@ -22,7 +22,7 @@ You have access to a news RSS ingestion and classification system via MCP tools.
 ### Classification
 | Tool | Purpose |
 |------|---------|
-| `mcp__nanoclaw__news_classify_now` | Classify unclassified items using Claude Haiku (params: `max_items`) |
+| `mcp__nanoclaw__news_classify_now` | Classify unclassified items using local Ollama LLM (params: `max_items`). Returns timing stats per batch. |
 | `mcp__nanoclaw__news_search` | Search classified items by topic, region, depth, credibility, relevance, time range |
 | `mcp__nanoclaw__news_clusters` | Show story clusters with source counts and credibility |
 

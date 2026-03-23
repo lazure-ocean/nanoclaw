@@ -54,7 +54,6 @@ function detectHostGateway(): string {
 export const PROXY_BIND_HOST =
   process.env.CREDENTIAL_PROXY_HOST || detectProxyBindHost();
 
-
 function isAppleContainer(): boolean {
   // Apple Container ships as /usr/local/bin/container (not Docker Desktop's docker CLI)
   try {
