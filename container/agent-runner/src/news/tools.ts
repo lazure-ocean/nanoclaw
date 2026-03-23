@@ -21,13 +21,13 @@ import { pollRssFeeds } from './rss-poller.js';
 
 const NEWS_DB_PATH = '/workspace/group/news.db';
 
-let initialized = false;
+let initPromise: Promise<void> | null = null;
 
-function ensureInit(): void {
-  if (initialized) return;
-  initNewsDb(NEWS_DB_PATH);
-  seedSources();
-  initialized = true;
+async function ensureInit(): Promise<void> {
+  if (!initPromise) {
+    initPromise = initNewsDb(NEWS_DB_PATH).then(() => { seedSources(); });
+  }
+  return initPromise;
 }
 
 export function registerNewsTools(server: McpServer): void {

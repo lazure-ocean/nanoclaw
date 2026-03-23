@@ -24,7 +24,7 @@ const RSS_SOURCES: SourceSeed[] = [
     id: 'rss:reuters-world',
     type: 'rss',
     name: 'Reuters World',
-    url: 'https://www.rss.app/feeds/v1.1/_Qd3B0mR3H2UkNcP.json',
+    url: 'https://openrss.org/feed/www.reuters.com',
     default_topics: JSON.stringify(['geopolitics', 'economics']),
     default_depth: 'breaking',
     language: 'en',
@@ -33,7 +33,7 @@ const RSS_SOURCES: SourceSeed[] = [
     id: 'rss:ap-news',
     type: 'rss',
     name: 'AP News',
-    url: 'https://rsshub.app/apnews/topics/apf-topnews',
+    url: 'https://feedx.net/rss/ap.xml',
     default_topics: JSON.stringify(['geopolitics']),
     default_depth: 'breaking',
     language: 'en',
@@ -69,7 +69,7 @@ const RSS_SOURCES: SourceSeed[] = [
     id: 'rss:economist',
     type: 'rss',
     name: 'The Economist',
-    url: 'https://www.economist.com/rss',
+    url: 'https://www.economist.com/international/rss.xml',
     default_topics: JSON.stringify(['economics', 'geopolitics']),
     default_depth: 'longform',
     language: 'en',
@@ -78,7 +78,7 @@ const RSS_SOURCES: SourceSeed[] = [
     id: 'rss:carnegie',
     type: 'rss',
     name: 'Carnegie Endowment',
-    url: 'https://carnegieendowment.org/rss/solr/?lang=en',
+    url: 'https://news.google.com/rss/search?q=site:carnegieendowment.org+when:30d&ceid=US:en&hl=en-US&gl=US',
     default_topics: JSON.stringify(['geopolitics', 'Russia']),
     default_depth: 'longform',
     language: 'en',
@@ -97,10 +97,13 @@ const RSS_SOURCES: SourceSeed[] = [
 
 export function seedSources(): { seeded: number; skipped: number } {
   const d = getDb();
-  const count = d.prepare('SELECT COUNT(*) as c FROM news_sources').get() as { c: number };
+  const stmt = d.prepare('SELECT COUNT(*) as c FROM news_sources');
+  stmt.step();
+  const count = (stmt.getAsObject() as { c: number }).c;
+  stmt.free();
 
-  if (count.c > 0) {
-    return { seeded: 0, skipped: count.c };
+  if (count > 0) {
+    return { seeded: 0, skipped: count };
   }
 
   let seeded = 0;
