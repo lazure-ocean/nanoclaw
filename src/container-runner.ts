@@ -23,6 +23,7 @@ import {
   CONTAINER_HOST_GATEWAY,
   CONTAINER_RUNTIME_BIN,
   hostGatewayArgs,
+  isAppleContainer,
   readonlyMountArgs,
   stopContainer,
 } from './container-runtime.js';
@@ -80,8 +81,11 @@ function buildVolumeMounts(
 
     // Shadow .env so the agent cannot read secrets from the mounted project root.
     // Credentials are injected by the credential proxy, never exposed to containers.
+    // Apple Container can't bind-mount over an existing file in a read-only mount,
+    // so skip the shadow on Apple Container. Credential proxy handles auth; the agent's
+    // ANTHROPIC_BASE_URL points to the proxy regardless of what's in .env.
     const envFile = path.join(projectRoot, '.env');
-    if (fs.existsSync(envFile)) {
+    if (fs.existsSync(envFile) && !isAppleContainer()) {
       mounts.push({
         hostPath: '/dev/null',
         containerPath: '/workspace/project/.env',
